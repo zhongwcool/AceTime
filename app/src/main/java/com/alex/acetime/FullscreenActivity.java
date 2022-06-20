@@ -139,7 +139,7 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         });
 
-        mHideHandler.postDelayed(mRealTimeRunnable, 1000); // here 1 seconds to refresh time after 1 seconds
+        mHideHandler.postDelayed(mRealTimeRunnable, 50); // here 50 milliseconds to refresh time
     }
 
     @Override
