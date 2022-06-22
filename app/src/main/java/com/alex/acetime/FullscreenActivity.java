@@ -5,7 +5,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.TextView;
@@ -18,6 +17,8 @@ import com.alex.acetime.databinding.ActivityFullscreenBinding;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -41,20 +42,22 @@ public class FullscreenActivity extends AppCompatActivity {
      * and a change of the status and navigation bar.
      */
     private static final int UI_ANIMATION_DELAY = 300;
+
+    //Timer + TimerTask结合的方法
+    private final Timer timer = new Timer();
     private final Handler mHideHandler = new Handler(Looper.myLooper());
     private TextView mContentView;
-    private final Runnable mRealTimeRunnable = new Runnable() {
+    private final TimerTask timerTask = new TimerTask() {
         @Override
         public void run() {
             // display your time here...
             Calendar c = Calendar.getInstance();
-            SimpleDateFormat dateformat = new SimpleDateFormat("hh:mm:ss SSS", Locale.CHINA);
-            String datetime = dateformat.format(c.getTime());
+            SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss SSS", Locale.CHINA);
+            String datetime = format.format(c.getTime());
             mContentView.setText(datetime);
-
-            mHideHandler.postDelayed(this, 50);
         }
     };
+
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
         @Override
@@ -95,29 +98,7 @@ public class FullscreenActivity extends AppCompatActivity {
             hide();
         }
     };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (AUTO_HIDE) {
-                        delayedHide(AUTO_HIDE_DELAY_MILLIS);
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    view.performClick();
-                    break;
-                default:
-                    break;
-            }
-            return false;
-        }
-    };
+
     private ActivityFullscreenBinding binding;
 
     @Override
@@ -139,7 +120,7 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         });
 
-        mHideHandler.postDelayed(mRealTimeRunnable, 50); // here 50 milliseconds to refresh time
+        timer.schedule(timerTask, 0, 100);
     }
 
     @Override
@@ -155,7 +136,7 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        mHideHandler.removeCallbacks(mRealTimeRunnable);
+        timer.cancel();
     }
 
     private void toggle() {
